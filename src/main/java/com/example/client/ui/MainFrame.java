@@ -17,8 +17,6 @@ public class MainFrame extends JFrame {
 
     private JTable table;
     private DefaultTableModel tableModel;
-
-    private JTextField tfId;
     private JTextField tfName;
     private JTextField tfContact;
     private JTextField tfGender;
@@ -49,8 +47,6 @@ public class MainFrame extends JFrame {
         JScrollPane scroll = new JScrollPane(table);
 
         // Labels and fields
-        JLabel lbId = new JLabel("ID:");
-        tfId = new JTextField(10); tfId.setEditable(false);
         JLabel lbName = new JLabel("Name:");
         tfName = new JTextField(20);
         JLabel lbContact = new JLabel("Contact:");
@@ -66,7 +62,6 @@ public class MainFrame extends JFrame {
         JButton btnRefresh = new JButton("Refresh");
 
         panel.add(scroll);
-        panel.add(lbId); panel.add(tfId);
         panel.add(lbName); panel.add(tfName);
         panel.add(lbContact); panel.add(tfContact);
         panel.add(lbGender); panel.add(tfGender);
@@ -79,20 +74,15 @@ public class MainFrame extends JFrame {
         layout.putConstraint(SpringLayout.EAST, scroll, -10, SpringLayout.EAST, panel);
         layout.putConstraint(SpringLayout.SOUTH, scroll, 300, SpringLayout.NORTH, panel);
 
-        layout.putConstraint(SpringLayout.NORTH, lbId, 20, SpringLayout.SOUTH, scroll);
-        layout.putConstraint(SpringLayout.WEST, lbId, 10, SpringLayout.WEST, panel);
-        layout.putConstraint(SpringLayout.NORTH, tfId, 20, SpringLayout.SOUTH, scroll);
-        layout.putConstraint(SpringLayout.WEST, tfId, 60, SpringLayout.WEST, panel);
-
         layout.putConstraint(SpringLayout.NORTH, lbName, 20, SpringLayout.SOUTH, scroll);
-        layout.putConstraint(SpringLayout.WEST, lbName, 200, SpringLayout.WEST, panel);
+        layout.putConstraint(SpringLayout.WEST, lbName, 10, SpringLayout.WEST, panel);
         layout.putConstraint(SpringLayout.NORTH, tfName, 20, SpringLayout.SOUTH, scroll);
-        layout.putConstraint(SpringLayout.WEST, tfName, 250, SpringLayout.WEST, panel);
+        layout.putConstraint(SpringLayout.WEST, tfName, 60, SpringLayout.WEST, panel);
 
         layout.putConstraint(SpringLayout.NORTH, lbContact, 20, SpringLayout.SOUTH, scroll);
-        layout.putConstraint(SpringLayout.WEST, lbContact, 500, SpringLayout.WEST, panel);
+        layout.putConstraint(SpringLayout.WEST, lbContact, 320, SpringLayout.WEST, panel);
         layout.putConstraint(SpringLayout.NORTH, tfContact, 20, SpringLayout.SOUTH, scroll);
-        layout.putConstraint(SpringLayout.WEST, tfContact, 560, SpringLayout.WEST, panel);
+        layout.putConstraint(SpringLayout.WEST, tfContact, 380, SpringLayout.WEST, panel);
 
         layout.putConstraint(SpringLayout.NORTH, lbGender, 60, SpringLayout.SOUTH, scroll);
         layout.putConstraint(SpringLayout.WEST, lbGender, 10, SpringLayout.WEST, panel);
@@ -100,9 +90,9 @@ public class MainFrame extends JFrame {
         layout.putConstraint(SpringLayout.WEST, tfGender, 60, SpringLayout.WEST, panel);
 
         layout.putConstraint(SpringLayout.NORTH, lbRoom, 60, SpringLayout.SOUTH, scroll);
-        layout.putConstraint(SpringLayout.WEST, lbRoom, 200, SpringLayout.WEST, panel);
+        layout.putConstraint(SpringLayout.WEST, lbRoom, 320, SpringLayout.WEST, panel);
         layout.putConstraint(SpringLayout.NORTH, tfRoom, 60, SpringLayout.SOUTH, scroll);
-        layout.putConstraint(SpringLayout.WEST, tfRoom, 250, SpringLayout.WEST, panel);
+        layout.putConstraint(SpringLayout.WEST, tfRoom, 380, SpringLayout.WEST, panel);
 
         layout.putConstraint(SpringLayout.NORTH, btnAdd, 110, SpringLayout.SOUTH, scroll);
         layout.putConstraint(SpringLayout.WEST, btnAdd, 10, SpringLayout.WEST, panel);
@@ -119,7 +109,6 @@ public class MainFrame extends JFrame {
         table.getSelectionModel().addListSelectionListener(e -> {
             int row = table.getSelectedRow();
             if (row >= 0) {
-                tfId.setText(String.valueOf(tableModel.getValueAt(row, 0)));
                 tfName.setText(String.valueOf(tableModel.getValueAt(row, 1)));
                 tfContact.setText(String.valueOf(tableModel.getValueAt(row, 2)));
                 tfGender.setText(String.valueOf(tableModel.getValueAt(row, 3)));
@@ -177,8 +166,10 @@ public class MainFrame extends JFrame {
     private void onUpdate() {
         new Thread(() -> {
             try {
-                Integer id = parseInt(tfId.getText());
-                if (id == null) { showError("Select a row first"); return; }
+                int row = table.getSelectedRow();
+                if (row < 0) { showError("Select a row first"); return; }
+                Object idObj = tableModel.getValueAt(row, 0);
+                Integer id = (idObj instanceof Number) ? ((Number) idObj).intValue() : parseInt(String.valueOf(idObj));
                 Tenant t = new Tenant(id, tfContact.getText(), tfGender.getText(), parseInt(tfRoom.getText()), tfName.getText());
                 Message<Tenant> req = new Message<>("update", t);
                 networkClient.sendMessage(req);
@@ -191,8 +182,10 @@ public class MainFrame extends JFrame {
     private void onDelete() {
         new Thread(() -> {
             try {
-                Integer id = parseInt(tfId.getText());
-                if (id == null) { showError("Select a row first"); return; }
+                int row = table.getSelectedRow();
+                if (row < 0) { showError("Select a row first"); return; }
+                Object idObj = tableModel.getValueAt(row, 0);
+                Integer id = (idObj instanceof Number) ? ((Number) idObj).intValue() : parseInt(String.valueOf(idObj));
                 Message<Object> req = new Message<>("delete", Map.of("user_id", id));
                 networkClient.sendMessage(req);
             } catch (Exception ex) {
